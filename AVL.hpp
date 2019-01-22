@@ -1,3 +1,4 @@
+#ifndef AVL_CLASS
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -6,18 +7,17 @@
 #include <cmath>
 #include <algorithm>
 
-using namespace std;
 
-// AVL Tree Node, deletion is not implemented yet
-class Node {
+// AVL Tree AVLNode, deletion is not implemented yet
+class AVLNode {
 public:
     int val;
     int bf;
-    Node* parent;
-    Node* left;
-    Node* right;
-    Node* Node::*ac_left;
-    Node* Node::*ac_right;
+    AVLNode* parent;
+    AVLNode* left;
+    AVLNode* right;
+    AVLNode* AVLNode::*ac_left;
+    AVLNode* AVLNode::*ac_right;
 
     int isSide() {
         return parent->right == this?1:-1;
@@ -29,7 +29,7 @@ public:
     int get_bf_m() {
     	return -bf;
     }
-    int (Node::*get_bf)();
+    int (AVLNode::*get_bf)();
 
     void set_bf_i(int v) {
     	bf = v;
@@ -37,17 +37,17 @@ public:
     void set_bf_m(int v) {
     	bf = -v;
     }
-    void (Node::*set_bf)(int);
+    void (AVLNode::*set_bf)(int);
 
-    Node* insert(Node* nd) {
+    AVLNode* insert(AVLNode* nd) {
     	int v = nd->val;
     	auto anchor = this, root = this;
-        while(true) {    // insert node
+        while(true) {    // insert AVLNode
         	if(v > anchor->val) {
-        		ac_right = &Node::right;
+        		ac_right = &AVLNode::right;
         	}
         	else if(v < anchor->val) {
-        		ac_right = &Node::left;
+        		ac_right = &AVLNode::left;
         	}
             else {
                 delete nd;
@@ -89,7 +89,7 @@ public:
                 	r2 = right;
                 }
                 else {
-                	cerr << "anchor->parent->bf = " << anchor->parent->bf << endl;
+                	std::cerr << "anchor->parent->bf = " << anchor->parent->bf << std::endl;
                 	exit(1);
                 }
 
@@ -109,21 +109,21 @@ public:
         return root;
     }
 
-    Node* rotate(bool isLeft=true) {
+    AVLNode* rotate(bool isLeft=true) {
     	if (isLeft) {
-			ac_left = &Node::left;
-			ac_right = &Node::right;
-			get_bf = &Node::get_bf_i;
-			set_bf = &Node::set_bf_i;
+			ac_left = &AVLNode::left;
+			ac_right = &AVLNode::right;
+			get_bf = &AVLNode::get_bf_i;
+			set_bf = &AVLNode::set_bf_i;
     	}
     	else {
-    		ac_left = &Node::right;
-    		ac_right = &Node::left;
-    		get_bf = &Node::get_bf_m;
-    		set_bf = &Node::set_bf_m;
+    		ac_left = &AVLNode::right;
+    		ac_right = &AVLNode::left;
+    		get_bf = &AVLNode::get_bf_m;
+    		set_bf = &AVLNode::set_bf_m;
     	}
 
-        Node* parent = this->parent, *A = this, *B = this->*ac_right;
+        AVLNode* parent = this->parent, *A = this, *B = this->*ac_right;
         int a_bf = (A->*get_bf)(), b_bf = (B->*get_bf)();
 
         // graft 1
@@ -166,7 +166,7 @@ public:
             	(B->*set_bf)(-1);
             }
             else {
-            	cerr << "a_bf: " << a_bf << ", b_bf: " << b_bf << endl;
+            	std::cerr << "a_bf: " << a_bf << ", b_bf: " << b_bf << std::endl;
             	exit(1);
             }
         }
@@ -175,7 +175,7 @@ public:
             (B->*set_bf)(0);
         }
         else {
-        	cerr << "a_bf: " << a_bf << ", b_bf: " << b_bf << endl;
+        	std::cerr << "a_bf: " << a_bf << ", b_bf: " << b_bf << std::endl;
         	exit(1);
         }
 
@@ -183,7 +183,7 @@ public:
 
     }
 
-    void serialize(vector<int>& output) {
+    void serialize(std::vector<int>& output) {
     	output.push_back(val);
     	if (left) {
     		left->serialize(output);
@@ -196,86 +196,5 @@ public:
 
 };
 
-
-// Application:
-// Given two non-negative integers x and y, an integer is powerful if it is equal to x^i + y^j for some integers i >= 0 and j >= 0.
-// Return a list of all powerful integers that have value less than or equal to bound.
-// You may return the answer in any order.  In your answer, each value should occur at most once.
-//
-//
-// Example 1:
-//
-// Input: x = 2, y = 3, bound = 10
-// Output: [2,3,4,5,7,9,10]
-// Explanation:
-// 2 = 2^0 + 3^0
-// 3 = 2^1 + 3^0
-// 4 = 2^0 + 3^1
-// 5 = 2^1 + 3^1
-// 7 = 2^2 + 3^1
-// 9 = 2^3 + 3^0
-// 10 = 2^0 + 3^2
-// Example 2:
-//
-// Input: x = 3, y = 5, bound = 15
-// Output: [2,4,6,8,10,14]
-
-class Solution {
-public:
-
-    vector<int> powerfulIntegers(int x, int y, int bound) {
-        // AVL tree
-        vector<int> X, Y;
-        int v = 1;
-        if (x != 1) {
-			while(v <= bound) {
-				X.push_back(v);
-				v *= x;
-			}
-        }
-        else {
-        	X.push_back(1);
-        }
-        v = 1;
-        if (y != 1) {
-			while(v <= bound) {
-				Y.push_back(v);
-				v *= y;
-			}
-        }
-        else {
-        	Y.push_back(1);
-        }
-
-        Node* root = new Node{2, 0}, *nd;
-        if (bound < 2) {
-        	return vector<int>();
-        }
-        int sizeX = X.size(), sizeY = Y.size();
-        int jhead = 1;
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = jhead; j < sizeY; j++) {
-                v = X[i] + Y[j];
-                if (v > bound) {
-                	continue;
-                }
-                nd = new Node{v, 0};
-                root = root->insert(nd);
-            }
-            jhead = 0;
-        }
-
-        vector<int> output;
-        root->serialize(output);
-        return output;
-    }
-};
-
-int main() {
-	Solution sl;
-	vector<int> result = sl.powerfulIntegers(2, 3, 200);
-	for (auto v : result)
-		cout << v << " ";
-}
-
+#endif
 
