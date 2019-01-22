@@ -34,3 +34,8 @@
 # Temp
 *~
 .DS_STORE
+\#*\#
+.\#*
+*.so
+*.dylib
+*.o
